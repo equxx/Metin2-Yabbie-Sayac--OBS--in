@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yabbie Animated Death Counter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent !important;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            height: 150px;
+            overflow: hidden;
+        }
+
+        /* "Yabbie Sayacı :" Yazısı */
+        .title {
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            margin-right: 25px;
+        }
+
+        /* 3 Bölmeli Dış Çerçeve Kutusu */
+        .counter-container {
+            display: flex;
+            gap: 5px; /* Haneler arasındaki dikey beyaz çizgiler */
+            background-color: white; /* Çerçeve rengi */
+            padding: 5px; /* Dış çerçeve kalınlığı */
+            border-radius: 2px;
+            width: 164px;
+            height: 94px;
+            box-sizing: border-box;
+            overflow: hidden; /* Sadece o anki rakam görünsün, gerisi gizlensin */
+        }
+
+        /* Her Bir Basamağın Durduğu Siyah Kutu */
+        .digit-window {
+            width: 48px;
+            height: 84px;
+            background-color: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Yukarı Aşağı Kayan Sayı Şeridi */
+        .digit-strip {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Yumuşak slot kayma efekti */
+            top: 0;
+            left: 0;
+        }
+
+        /* Şeridin İçindeki Her Bir Rakam */
+        .digit {
+            height: 84px;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title">Yabbie Sayacı :</div>
+    
+    <div class="counter-container">
+        <!-- 1. Basamak (Yüzler) -->
+        <div class="digit-window">
+            <div id="strip1" class="digit-strip">
+                <div class="digit">0</div><div class="digit">1</div><div class="digit">2</div><div class="digit">3</div><div class="digit">4</div>
+                <div class="digit">5</div><div class="digit">6</div><div class="digit">7</div><div class="digit">8</div><div class="digit">9</div>
+            </div>
+        </div>
+        <!-- 2. Basamak (Onlar) -->
+        <div class="digit-window">
+            <div id="strip2" class="digit-strip">
+                <div class="digit">0</div><div class="digit">1</div><div class="digit">2</div><div class="digit">3</div><div class="digit">4</div>
+                <div class="digit">5</div><div class="digit">6</div><div class="digit">7</div><div class="digit">8</div><div class="digit">9</div>
+            </div>
+        </div>
+        <!-- 3. Basamak (Birler) -->
+        <div class="digit-window">
+            <div id="strip3" class="digit-strip">
+                <div class="digit">0</div><div class="digit">1</div><div class="digit">2</div><div class="digit">3</div><div class="digit">4</div>
+                <div class="digit">5</div><div class="digit">6</div><div class="digit">7</div><div class="digit">8</div><div class="digit">9</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dosyaAdi = 'olumler.txt'; 
+        let eskiSayi = "000";
+
+        function sayaciGuncelle() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", dosyaAdi + "?t=" + new Date().getTime(), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
+                    let yeniSayi = xhr.responseText.trim();
+                    
+                    // Geçersiz veri koruması
+                    if (isNaN(yeniSayi) || yeniSayi === "") return;
+
+                    // 3 haneye tamamlama (001, 012 vb.)
+                    if (yeniSayi.length === 1) yeniSayi = "00" + yeniSayi;
+                    else if (yeniSayi.length === 2) yeniSayi = "0" + yeniSayi;
+                    else if (yeniSayi.length > 3) yeniSayi = yeniSayi.slice(-3);
+
+                    if (yeniSayi !== eskiSayi) {
+                        // Basamakları tek tek alıp şeritleri kaydırıyoruz
+                        kaydir('strip1', yeniSayi.charAt(0));
+                        kaydir('strip2', yeniSayi.charAt(1));
+                        kaydir('strip3', yeniSayi.charAt(2));
+                        eskiSayi = yeniSayi;
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function kaydir(id, rakam) {
+            const el = document.getElementById(id);
+            const r = parseInt(rakam);
+            // Her rakam 84px yükseklikte olduğu için şeridi yukarı doğru öteliyoruz
+            el.style.transform = `translateY(-${r * 84}px)`;
+        }
+
+        // 300 milisaniyede bir .txt dosyasını kontrol et
+        setInterval(sayaciGuncelle, 300);
+        sayaciGuncelle();
+    </script>
+</body>
+</html>
